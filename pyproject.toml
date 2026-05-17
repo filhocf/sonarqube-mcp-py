@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sonarqube-mcp-py"
+version = "0.1.0"
+description = "Python MCP server for SonarQube — query projects, issues, quality gates, coverage, and hotspots"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "filhocf", email = "filhocf@gmail.com" },
+]
+keywords = ["mcp", "sonarqube", "code-quality", "static-analysis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "fastmcp>=3.2.0",
+    "requests>=2.31.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=1.0",
+    "responses>=0.25.0",
+]
+
+[project.scripts]
+sonarqube-mcp-py = "sonarqube_mcp.server:main"
+
+[project.urls]
+Repository = "https://github.com/filhocf/sonarqube-mcp-py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sonarqube_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
