@@ -2,9 +2,9 @@ name: Lint & Test
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -17,6 +17,10 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
       - run: pytest --tb=short -q
+      - name: Security check (bandit)
+        run: |
+          pip install bandit
+          bandit -r src/ -ll -ii --skip B104
 
   publish:
     runs-on: ubuntu-latest
