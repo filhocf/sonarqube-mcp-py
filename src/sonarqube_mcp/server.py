@@ -160,7 +160,7 @@ def main():
     if transport == "streamable-http":
         mcp.run(
             transport="streamable-http",
-            host="0.0.0.0",
+            host=os.environ.get("MCP_HOST", "127.0.0.1"),
             port=int(os.environ.get("MCP_PORT", "8959")),
             path="/mcp",
         )

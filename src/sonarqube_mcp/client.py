@@ -1,7 +1,22 @@
 """SonarQube REST API client."""
 
+import ssl
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.ssl_ import create_urllib3_context
 from typing import Any
+
+
+class _LowSecurityAdapter(HTTPAdapter):
+    """HTTPS adapter that lowers SECLEVEL for legacy internal certificates."""
+
+    def init_poolmanager(self, *args, **kwargs):
+        ctx = create_urllib3_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        ctx.set_ciphers("DEFAULT:@SECLEVEL=1")
+        kwargs["ssl_context"] = ctx
+        return super().init_poolmanager(*args, **kwargs)
 
 
 class SonarQubeClient:
@@ -12,6 +27,8 @@ class SonarQubeClient:
         self.session = requests.Session()
         self.session.auth = (token, "")
         self.session.verify = verify_ssl
+        if not verify_ssl:
+            self.session.mount("https://", _LowSecurityAdapter())
 
     def _get(self, endpoint: str, params: dict | None = None) -> dict:
         url = f"{self.base_url}/api/{endpoint}"
@@ -23,7 +40,16 @@ class SonarQubeClient:
         params = {"ps": page_size}
         if query:
             params["q"] = query
-        return self._get("projects/search", params)
+        try:
+            return self._get("projects/search", params)
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code == 403:
+                # Fallback: components/search works without admin permission
+                params["qualifiers"] = "TRK"
+                result = self._get("components/search", params)
+                return {"components": result.get("components", []),
+                        "paging": result.get("paging", {})}
+            raise
 
     def get_quality_gate_status(self, project_key: str) -> dict:
         return self._get("qualitygates/project_status", {"projectKey": project_key})
