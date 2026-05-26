@@ -21,15 +21,15 @@ def search_sonarqube_projects(query: str | None = None, page_size: int = 50) -> 
 
 
 @mcp.tool()
-def get_project_quality_gate_status(project_key: str) -> dict:
+def get_project_quality_gate_status(project_key: str, branch: str | None = None) -> dict:
     """Get quality gate status for a project"""
-    return client.get_quality_gate_status(project_key)
+    return client.get_quality_gate_status(project_key, branch)
 
 
 @mcp.tool()
-def get_component_measures(component: str, metric_keys: str) -> dict:
+def get_component_measures(component: str, metric_keys: str, branch: str | None = None) -> dict:
     """Get metrics for a component (bugs, coverage, etc.)"""
-    return client.get_measures(component, metric_keys)
+    return client.get_measures(component, metric_keys, branch)
 
 
 @mcp.tool()
@@ -40,15 +40,17 @@ def list_quality_gates() -> dict:
 
 @mcp.tool()
 def search_sonar_issues(project_key: str, severities: str | None = None,
-                        statuses: str = "OPEN", page_size: int = 50) -> dict:
+                        statuses: str = "OPEN", page_size: int = 50,
+                        branch: str | None = None) -> dict:
     """Search for issues (bugs, vulnerabilities, code smells) in a project"""
-    return client.search_issues(project_key, severities, statuses, page_size)
+    return client.search_issues(project_key, severities, statuses, page_size, branch)
 
 
 @mcp.tool()
-def search_security_hotspots(project_key: str, status: str = "TO_REVIEW") -> dict:
+def search_security_hotspots(project_key: str, status: str = "TO_REVIEW",
+                             branch: str | None = None) -> dict:
     """Search for security hotspots in a project"""
-    return client.search_hotspots(project_key, status)
+    return client.search_hotspots(project_key, status, branch)
 
 
 @mcp.tool()
@@ -76,22 +78,25 @@ def list_pull_requests(project_key: str) -> dict:
 
 
 @mcp.tool()
-def get_file_coverage_details(component: str, page_size: int = 100) -> dict:
+def get_file_coverage_details(component: str, page_size: int = 100,
+                              branch: str | None = None) -> dict:
     """Get coverage details for files in a project"""
     return client.get_component_tree(component, "coverage,lines_to_cover,uncovered_lines",
-                                     sort_field="coverage", page_size=page_size)
+                                     sort_field="coverage", page_size=page_size, branch=branch)
 
 
 @mcp.tool()
-def search_files_by_coverage(component: str, page_size: int = 20) -> dict:
+def search_files_by_coverage(component: str, page_size: int = 20,
+                             branch: str | None = None) -> dict:
     """Find files with lowest coverage"""
-    return client.get_component_tree(component, "coverage", sort_field="coverage", page_size=page_size)
+    return client.get_component_tree(component, "coverage", sort_field="coverage",
+                                     page_size=page_size, branch=branch)
 
 
 @mcp.tool()
-def get_duplications(file_key: str) -> dict:
+def get_duplications(file_key: str, branch: str | None = None) -> dict:
     """Get code duplications for a file"""
-    return client.get_duplications(file_key)
+    return client.get_duplications(file_key, branch)
 
 
 def main():

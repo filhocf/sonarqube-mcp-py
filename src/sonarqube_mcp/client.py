@@ -51,24 +51,37 @@ class SonarQubeClient:
                         "paging": result.get("paging", {})}
             raise
 
-    def get_quality_gate_status(self, project_key: str) -> dict:
-        return self._get("qualitygates/project_status", {"projectKey": project_key})
+    def get_quality_gate_status(self, project_key: str, branch: str | None = None) -> dict:
+        params = {"projectKey": project_key}
+        if branch:
+            params["branch"] = branch
+        return self._get("qualitygates/project_status", params)
 
-    def get_measures(self, component: str, metric_keys: str) -> dict:
-        return self._get("measures/component", {"component": component, "metricKeys": metric_keys})
+    def get_measures(self, component: str, metric_keys: str, branch: str | None = None) -> dict:
+        params = {"component": component, "metricKeys": metric_keys}
+        if branch:
+            params["branch"] = branch
+        return self._get("measures/component", params)
 
     def list_quality_gates(self) -> dict:
         return self._get("qualitygates/list")
 
     def search_issues(self, project_key: str, severities: str | None = None,
-                      statuses: str = "OPEN", page_size: int = 50) -> dict:
+                      statuses: str = "OPEN", page_size: int = 50,
+                      branch: str | None = None) -> dict:
         params = {"componentKeys": project_key, "statuses": statuses, "ps": page_size}
         if severities:
             params["severities"] = severities
+        if branch:
+            params["branch"] = branch
         return self._get("issues/search", params)
 
-    def search_hotspots(self, project_key: str, status: str = "TO_REVIEW") -> dict:
-        return self._get("hotspots/search", {"projectKey": project_key, "status": status})
+    def search_hotspots(self, project_key: str, status: str = "TO_REVIEW",
+                        branch: str | None = None) -> dict:
+        params = {"projectKey": project_key, "status": status}
+        if branch:
+            params["branch"] = branch
+        return self._get("hotspots/search", params)
 
     def show_hotspot(self, hotspot_key: str) -> dict:
         return self._get("hotspots/show", {"hotspot": hotspot_key})
@@ -84,14 +97,20 @@ class SonarQubeClient:
 
     def get_component_tree(self, component: str, metric_keys: str,
                            qualifiers: str = "FIL", page_size: int = 100,
-                           sort_field: str | None = None) -> dict:
+                           sort_field: str | None = None,
+                           branch: str | None = None) -> dict:
         params = {"component": component, "metricKeys": metric_keys,
                   "qualifiers": qualifiers, "ps": page_size}
         if sort_field:
             params["s"] = sort_field
             params["metricSort"] = metric_keys.split(",")[0]
             params["metricSortFilter"] = "withMeasuresOnly"
+        if branch:
+            params["branch"] = branch
         return self._get("measures/component_tree", params)
 
-    def get_duplications(self, file_key: str) -> dict:
-        return self._get("duplications/show", {"key": file_key})
+    def get_duplications(self, file_key: str, branch: str | None = None) -> dict:
+        params = {"key": file_key}
+        if branch:
+            params["branch"] = branch
+        return self._get("duplications/show", params)
